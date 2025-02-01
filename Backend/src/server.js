@@ -1,21 +1,30 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const cors = require("cors");
-const dotenv = require("dotenv");
-const connectDB = require("./config/db");
 const faqRoutes = require("./routes/faqRoutes");
-
-dotenv.config();
-connectDB(); // Connect to MongoDB
+require("dotenv").config();
 
 const app = express();
-app.use(express.json());
-app.use(cors());
 
-app.use("/api/faqs", faqRoutes);
+// Middlewares
+app.use(express.json());  // Parse incoming JSON data
+app.use(cors());  // Allow cross-origin requests
 
-app.get("/", (req, res) => {
-    res.send("FAQ API is Running...");
+// Connect to MongoDB
+mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+}).then(() => {
+    console.log("Connected to MongoDB...");
+}).catch((error) => {
+    console.error("Error connecting to MongoDB:", error);
 });
 
+// Use routes
+app.use("/api/faqs", faqRoutes);
+
+// Start the server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
